@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="ISO-8859-1" ?>
+
+ <database>
+	<ip>127.0.0.1</ip>
+	<user>root</user>
+	<pass>b_a_sket88</pass>
+	<description>Necessary info to connect with the database</description>
+ </database>
+
+ <teamfile>
+	<path></path>
+	<description>Path to the file which contains all teams of the
+	league with their references</description>
+ </teamfile>
+
+ <predictor>
+	<trainpath></trainpath>
+	<testpath></testpath>
+	<modelpath></modelpath>
+	<description>Path where to create the necessary files for train and test</description>
+ </predictor>
