@@ -61,7 +61,7 @@ public class ProcessSeason {
         int[] vector = new int[6];
         Integer[] localData = new Integer[17];
         Integer[] visitData = new Integer[17];
-        double[] entrada = new double[26];
+        double[] entrada = new double[27], valPlayers = new double[2];
         Integer local, visitante, streak = 5;
         String  temp;
         
@@ -139,26 +139,32 @@ public class ProcessSeason {
                 entrada[12] = 0.0;
             }            
             entrada[13] = localData[16] / localData[0]; //promedio puntos obtenidos por partido
-            entrada[14] = (double)streak(conexion, local,streak,result.getInt("Jornada"), result.getString("Temporada"));
+            entrada[14] = (double)streak(conexion, local,streak,result.getInt("Jornada"), result.getString("Temporada"));//factor racha
+            valPlayers = addPlayersValue(conexion, local,result.getString("Temporada"));
+            entrada[15] = valPlayers[0];//suma de la valoración de los jugadores
+            entrada[16] = valPlayers[0]/valPlayers[1]; //promedio valoracion jugadores
             
-            entrada[15] = (double)visitData[1] / visitData[0]; //porcentaje partidos ganados hasta la fecha
-            entrada[16] = (double)visitData[7] / (visitData[7] + visitData[8] + visitData[9]); //Porcentaje partidos ganados como visitante hasta la fecha
-            entrada[17] = (double)visitData[8] / (visitData[7] + visitData[8] + visitData[9]); //porcentaje partidos empatados como visitante hasta la fecha
-            entrada[18] = (double)visitData[9] / (visitData[7] + visitData[8] + visitData[9]); //porcentaje partidos perdidos como visitante hata la fecha
+            entrada[17] = (double)visitData[1] / visitData[0]; //porcentaje partidos ganados hasta la fecha
+            entrada[18] = (double)visitData[7] / (visitData[7] + visitData[8] + visitData[9]); //Porcentaje partidos ganados como visitante hasta la fecha
+            entrada[19] = (double)visitData[8] / (visitData[7] + visitData[8] + visitData[9]); //porcentaje partidos empatados como visitante hasta la fecha
+            entrada[20] = (double)visitData[9] / (visitData[7] + visitData[8] + visitData[9]); //porcentaje partidos perdidos como visitante hata la fecha
             if((visitData[10] + visitData[11])>0){
-                entrada[19] = (double)(visitData[10] - visitData[11]) / (visitData[10] + visitData[11]); //promedio difrenecia goles hasta la fecha
+                entrada[21] = (double)(visitData[10] - visitData[11]) / (visitData[10] + visitData[11]); //promedio difrenecia goles hasta la fecha
             }else{
-                entrada[19] = 0.0;
+                entrada[21] = 0.0;
             }
             
             if((visitData[12] + visitData[13])>0){
-                entrada[20] = (double)(visitData[12] - visitData[13]) / (visitData[12] + visitData[13]); //promedio diferencia goles como visitante
+                entrada[22] = (double)(visitData[12] - visitData[13]) / (visitData[12] + visitData[13]); //promedio diferencia goles como visitante
             }else{
-                entrada[20] = 0.0;
+                entrada[22] = 0.0;
             }
-            entrada[21] = (double)visitData[16] / visitData[0]; //promedio puntos por partido
-            entrada[22] = (double)streak(conexion, visitante, streak, result.getInt("Jornada"), result.getString("Temporada"));
-           
+            entrada[23] = (double)visitData[16] / visitData[0]; //promedio puntos por partido
+            entrada[24] = (double)streak(conexion, visitante, streak, result.getInt("Jornada"), result.getString("Temporada"));
+            valPlayers = addPlayersValue(conexion, visitante ,result.getString("Temporada"));
+            entrada[25] = valPlayers[0];//suma de la valoración de los jugadores
+            entrada[26] = valPlayers[0]/valPlayers[1]; //promedio valoracion jugadores
+            
 //            if(result.getBoolean("VL")){
 //                entrada[21] = 0.0;
 //                //entrada[21] = 1.0;
@@ -182,7 +188,7 @@ public class ProcessSeason {
 //            }
 //             pw.print(entrada[entrada.length-3]+"\n");
              
-             for(int i = 0; i<23; i++){                
+             for(int i = 0; i<27; i++){                
                 pw.print(entrada[i] +", ");
             }
              if(result.getBoolean("VL")){
@@ -320,13 +326,14 @@ public class ProcessSeason {
         
         int racha = 0;
         ArrayList<Integer> vector = new ArrayList<>();      
-        System.out.println(rs.next());
+       
             
             while (rs.next()) {
                 vector.add(rs.getInt("PG"));
                 vector.add(rs.getInt("PP"));
                                
             }
+            
             if(vector.isEmpty()){
                 racha = 0;
             }
@@ -336,7 +343,7 @@ public class ProcessSeason {
                 racha = vector.get(0)-vector.get(1);
             }
             rs.close();
-          
+          System.out.println(racha);
             return racha;
     }
     /**
@@ -350,14 +357,15 @@ public class ProcessSeason {
     public static double[] addPlayersValue(Connection conexion, int teamID, String temporada ) throws SQLException{
             
             double totalValue = 0, numJugadores = 0;
-            double[] vector = null;
+            double[] vector = new double[2];
             
             Statement st = conexion.createStatement();
-            ResultSet result = st.executeQuery("SELECT * FROM LIGA.Historico_Jugador h JOIN Equipos e ON e.idEquipos = h.idEquipo WHERE e.idEquipos = "+ teamID + " AND h.Temporada = '"+ temporada +"'");
-                        
+            ResultSet result = st.executeQuery("SELECT h.ValPos as ValPos FROM LIGA.Historico_Jugador h JOIN Equipos e ON e.idEquipos = h.idEquipo WHERE e.idEquipos = "+ teamID + " AND h.Temporada = '"+ temporada +"'");
+                
+          
             while (result.next()){
                 numJugadores ++;
-                totalValue += result.getDouble("h.ValPos");
+                totalValue += result.getDouble("ValPos");
             }
             vector[0] = totalValue;
             vector[1] = numJugadores;
