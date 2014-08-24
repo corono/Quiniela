@@ -9,6 +9,8 @@ package database;
 
 
 
+import conf.Conf;
+
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.ResultSet;
@@ -17,7 +19,11 @@ import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.text.ParseException;
 
+        
 import java.util.*;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.apache.commons.configuration.ConfigurationException;
 import process.ClasRow;
 
 
@@ -31,7 +37,15 @@ public class BBDD {
     private static final String user = "root";
     private static final String pass = "b_a_sket88";
     public static ArrayList<String> teams = new ArrayList<>();
+    private static Conf configuration = null;
 
+    static{
+        try {
+            configuration = Conf.getConfiguration();
+        } catch (ConfigurationException ex) {
+            System.out.println(ex.getMessage());
+        }
+    }
     
      /**
       * Método que conecta con la BBDD y devuelve la conexión.
@@ -344,6 +358,8 @@ public class BBDD {
             return teamid;
       }
      */
+      
+      
       
     /**
      * @param args the command line arguments

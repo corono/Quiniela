@@ -19,7 +19,7 @@ public class Conf {
     
     
     private static Conf myInstance = null;
-    private static XMLConfiguration xmlConf = null;
+    private XMLConfiguration xmlConf = null;
     
     private Conf() throws ConfigurationException {
         xmlConf = new XMLConfiguration("conf/config.xml");
@@ -38,9 +38,13 @@ public class Conf {
         return myInstance;
     }
     
-    public static String getAliasFile(){
+    public  String getAliasFile(){
         return xmlConf.getString("teamfile.path");
     }
     
+    public  String getMysqlUrl() {
+       
+        return xmlConf.getString("MySqlUrl");
+    }
     
 }
