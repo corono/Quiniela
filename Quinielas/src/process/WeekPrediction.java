@@ -14,14 +14,20 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import javax.xml.parsers.ParserConfigurationException;
 import org.apache.commons.configuration.ConfigurationException;
 import org.xml.sax.SAXException;
+import static process.ProcessSeason.addPlayersValue;
 import static process.ProcessSeason.getMatchesBetween;
 import static process.ProcessSeason.streak;
+import static process.ProcessedFiles.arffHeader;
 
 /**
  * This class reads the week matchs and return the prediction for that matchs
@@ -43,10 +49,30 @@ public class WeekPrediction {
     }
     
     public static void weekArffFile(ArrayList<String> matchs1, ArrayList<String> matchs2, String season, String jornada) throws ParserConfigurationException, SAXException, IOException, SQLException, Exception{
-        //vector = getMatchesBetween(local, visitante, temp, conexion);
+        
+        double[] inputRow = new double[27];
+        
+        PrintWriter pw = new PrintWriter (new File("testFile1div.arff"));
+        arffHeader(pw);        
         for(int i = 0; i < matchs1.size(); i++){
-            getMatchsTeams(matchs1.get(i), season, jornada);
+            inputRow = getMatchsTeams(matchs1.get(i), season);
+            for(int j = 0; j < inputRow.length; j++){
+                pw.print(inputRow[j]+",");
+            }
+            pw.print("v\n");
+        } 
+        pw.close();
+        
+        PrintWriter pw2 = new PrintWriter (new File("testFile2div.arff"));
+        arffHeader(pw2);
+        for(int i = 0; i < matchs2.size(); i++){
+            inputRow = getMatchsTeams(matchs2.get(i), season);
+            for(int j = 0; j < inputRow.length; j++){
+                pw.print(inputRow[j]+",");
+            }
+            pw.print("v\n");
         }
+        pw2.close();
         
     }
     /**
@@ -59,7 +85,7 @@ public class WeekPrediction {
      * @throws java.sql.SQLException
      * @throws java.io.IOException
      */
-    public static void getMatchsTeams(String match, String season, String jornada) throws ParserConfigurationException, SAXException, IOException, SQLException, Exception{
+    public static double[] getMatchsTeams(String match, String season) throws ParserConfigurationException, SAXException, IOException, SQLException, Exception{
         
         String[] matchs = match.split("-");
         int team1 = getTeamID(matchs[0]);
@@ -67,13 +93,161 @@ public class WeekPrediction {
         System.out.println(matchs[0]+" "+team1+" "+team2+" "+matchs[1]);
         //consulta para generar entrada NN
         Connection conexion = getConexionBBDD();
+        
+        int jornada = getJornada(season,team1,team2,conexion);
+        
         int[] historic = getMatchesBetween(team1, team2, season, conexion);
-        streak(conexion, team1, configuration.getStreak(), Integer.valueOf(jornada), season);
+        int[] seasonData = getSeasonPerformance(team1, season,jornada, conexion);
+        
+        double[] entrada = new double[27];
+        double[] aux = new double[12]; 
+        
+        entrada[0] = (double)team1;
+        entrada[1] = (double)team2;  
+        
+        
+        if((historic[5]+historic[0]+historic[1]+historic[2]+historic[3]+historic[4]) > 0){
+            entrada[2] = (double)(historic[0]+historic[3]) / (historic[5]+historic[0]+historic[1]+historic[2]+historic[3]+historic[4]);   //porcentaje enfrentamientos victoria local
+            entrada[3] = (double)(historic[2]+historic[5]) / (historic[5]+historic[0]+historic[1]+historic[2]+historic[3]+historic[4]);   //porcentaje enfrentamientos victoria visitante
+            entrada[4] = (double)(historic[1]+historic[4]) / (historic[5]+historic[0]+historic[1]+historic[2]+historic[3]+historic[4]);   //porcentaje enfrentamientos empatados
+            entrada[5] = (double)(historic[0]+historic[5]) / (historic[5]+historic[0]+historic[1]+historic[2]+historic[3]+historic[4]);   //porcentaje enfrentamientos ganados por local
+            entrada[6] = (double)(historic[2]+historic[3]) / (historic[5]+historic[0]+historic[1]+historic[2]+historic[3]+historic[4]);   //porcentaje enfrentamientos ganados por visitante
+        }else{
+            entrada[2] = 0.0;
+            entrada[3] = 0.0;
+            entrada[4] = 0.0;
+            entrada[5] = 0.0;
+            entrada[6] = 0.0;
+        }
+        
+        aux = getTeamParams(seasonData);
+        System.arraycopy(aux, 0, entrada, 7, aux.length);
+        
+        entrada[14] = (double)streak(conexion, team1, configuration.getStreak(), jornada, season);//factor racha
+        
+        double[] valPlayers = addPlayersValue(conexion, team1, season); 
+        entrada[15] = valPlayers[0];//suma de la valoración de los jugadores
+        entrada[16] = valPlayers[0]/valPlayers[1]; //promedio valoracion jugadores
+        
+        seasonData = getSeasonPerformance(team2, season,jornada, conexion);
+        aux = getTeamParams(seasonData);
+        System.arraycopy(aux, 0, entrada, 17, aux.length);
+        entrada[24] = (double)streak(conexion, team2, configuration.getStreak(),jornada, season);//factor racha
+        
+        valPlayers = addPlayersValue(conexion, team2, season); 
+        entrada[25] = valPlayers[0];//suma de la valoración de los jugadores
+        entrada[26] = valPlayers[0]/valPlayers[1]; //promedio valoracion jugadores        
+        
+        return entrada;
         
     }
-    public static void getSeasonPerformance(int team, String season, int jornada, Connection conexion){
+    /**
+     * 
+     * @param season
+     * @param local
+     * @param visitante
+     * @param conexion
+     * @return
+     * @throws SQLException 
+     */
+    public static int getJornada(String season, int local, int visitante, Connection conexion) throws SQLException{
         
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT * FROM LIGA.Partidos where Temporada = '");
+        sb.append(season);
+        sb.append("' AND Local = ");
+        sb.append(local);
+        sb.append(" AND Visitante = ");
+        sb.append(visitante);
+        System.out.println(sb.toString());
+        Statement st = conexion.createStatement();
+        ResultSet result = st.executeQuery(sb.toString());
+        System.out.println(result.getInt("Jornada"));
+        return result.getInt("Jornada");
+    }
+    /**
+     * 
+     * @param team
+     * @param season
+     * @param jornada
+     * @param conexion
+     * @return
+     * @throws SQLException 
+     */
+    public static int[] getSeasonPerformance(int team, String season, int jornada, Connection conexion) throws SQLException{
         
+        StringBuilder sb = new StringBuilder();
+        sb.append("SELECT * FROM LIGA.Clasificacion where Temporada = '");
+        sb.append(season);
+        sb.append("' AND jornada = ");
+        sb.append(jornada);
+        sb.append(" AND Equipos_idEquipos = ");
+        sb.append(team);
+        
+        int[] teamData = new int[17];
+        
+        Statement st = conexion.createStatement();
+        ResultSet result = st.executeQuery(sb.toString());
+        while (result.next()){
+            teamData[0] = result.getInt("PJ");
+            teamData[1] = result.getInt("PG");
+            teamData[2] = result.getInt("PE");
+            teamData[3] = result.getInt("PP");
+            teamData[4] = result.getInt("PGL");
+            teamData[5] = result.getInt("PEL");
+            teamData[6] = result.getInt("PPL");
+            teamData[7] = result.getInt("PGV");
+            teamData[8] = result.getInt("PEV");
+            teamData[9] = result.getInt("PPV");
+            teamData[10] = result.getInt("GF");
+            teamData[11] = result.getInt("GC");
+            teamData[12] = result.getInt("GFL");
+            teamData[13] = result.getInt("GCL");
+            teamData[14] = result.getInt("GFV");
+            teamData[15] = result.getInt("GCV");
+            teamData[16] = result.getInt("Puntos");
+        }
+       
+            System.out.println(sb.toString()+"kaka "+teamData[0]);
+       
+        
+        return teamData;
+        
+    }
+    /**
+     * returns input params
+     * 0 percentage of matches winned until now
+     * 1 percentage of matches winned as local
+     * 2 percentage of matches  drawn as local
+     * 3 percentage of matches loosed as local
+     * 4 goal average difference
+     * 5 goal average difference as local
+     * 6 average points obtained by match
+     * @param teamData
+     * @return 
+     */
+    public static double[] getTeamParams(int[] teamData){
+        
+        double[] entrada = new double[7];
+        
+         
+        entrada[0] = (double)teamData[1] / teamData[0]; //porcentaje partidos ganados hasta la fecha
+        entrada[1] = (double)teamData[4] / (teamData[4] + teamData[5] + teamData[6]); //Porcentaje partidos ganados como local hasta la fecha
+        entrada[2] = (double)teamData[5] / (teamData[4] + teamData[5] + teamData[6]); //porcentaje partidos empatados como local
+        entrada[3] =(double) teamData[6] / (teamData[4]+teamData[5] + teamData[6]); //porcentaje partidos perdidos como local
+        if((teamData[10] + teamData[11]) > 0){
+            entrada[4] = (double)(teamData[10] - teamData[11]) / (teamData[10] + teamData[11]); //promedio de la diferencia de goles partidos hasta la fecha
+        }else{
+            entrada[4] = 0.0;
+        }
+        if((teamData[12] + teamData[13]) > 0){
+            entrada[5] = (double)(teamData[12] - teamData[13]) / (teamData[12] + teamData[13]); //promedio diferencia goles partidos como local
+        }else{
+            entrada[5] = 0.0;
+        }            
+        entrada[6] = teamData[16] / teamData[0]; //promedio puntos obtenidos por partido
+        
+        return entrada;
         
     }
     
@@ -87,14 +261,10 @@ public class WeekPrediction {
         BufferedReader br = new BufferedReader(fr);
         
         while ((line = br.readLine()) != null ){
-            System.out.println(line);
             if (line.contains("Primera")){
                 primera = true;
                 line = br.readLine();
                 season = line.split(" ")[line.split(" ").length-1];
-                System.out.println(season);
-                line = br.readLine();
-                jornada = line.split(" ")[line.split(" ").length-1];
                 line = br.readLine();
                 
             }
@@ -103,9 +273,6 @@ public class WeekPrediction {
                 segunda = true;
                 line = br.readLine();
                 season = line.split(" ")[line.split(" ").length-1];
-                System.out.println(season);
-                line = br.readLine();
-                jornada = line.split(" ")[line.split(" ").length-1];
                 line = br.readLine();
             }
             

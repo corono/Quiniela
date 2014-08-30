@@ -45,7 +45,9 @@ public class Conf {
     public  String getAliasFile(){
         return config.getString("teamfile.path");
     }
-    
+    public  String getMatchsFile(){
+        return config.getString("matchsfile.path");
+    }    
     public  String getMysqlHost() {       
         return config.getString("database.host");
     }
@@ -60,6 +62,9 @@ public class Conf {
     }
     public Integer getStreak(){
         return config.getInteger("streak",5);
+    }
+    public String getPredictionsFile(){
+        return config.getString("predictionsfile.path");
     }
     
 }

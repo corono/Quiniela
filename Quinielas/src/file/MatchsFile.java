@@ -6,6 +6,7 @@
 
 package file;
 
+import conf.Conf;
 import static database.BBDD.getConexionBBDD;
 import static database.BBDD.saveMatch;
 import database.TeamAlias;
@@ -36,7 +37,12 @@ import static process.LevenshteinDistance.computeLevenshteinDistance;
  */
 public class MatchsFile {
     
-     private static final String matchsFile = "../data/1-2div";
+     //private static final String matchsFile = "../data/1-2div";
+     private static Conf configuration = null;
+     
+     static{
+        configuration = Conf.getConfiguration();
+    }
     
     /**
        * método que abre el fichero que contiene los partidos
@@ -44,7 +50,7 @@ public class MatchsFile {
        * @throws Exception 
        */
       public static FileReader openMatchesFile () throws Exception{
-                    FileReader fr = new FileReader (new File (matchsFile));
+                    FileReader fr = new FileReader (new File (configuration.getMatchsFile()));
                     
                     return fr;
       }
@@ -122,7 +128,7 @@ public class MatchsFile {
             HashMap <Integer, Integer>  dLevenshtein = new HashMap<>();
             
             
-            File fXmlFile = new File(TeamAlias.aliasFile);
+            File fXmlFile = new File(configuration.getAliasFile());
             DocumentBuilderFactory dbFactory = DocumentBuilderFactory.newInstance();
             DocumentBuilder dBuilder = dbFactory.newDocumentBuilder();
             Document doc = dBuilder.parse(fXmlFile);

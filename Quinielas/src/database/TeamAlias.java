@@ -7,6 +7,7 @@
 package database;
 
 
+import conf.Conf;
 import static database.BBDD.getConexionBBDD;
 import java.io.File;
 
@@ -36,9 +37,15 @@ import org.w3c.dom.Element;
  * @author francisco
  */
 public class TeamAlias {
+    private static Conf configuration = null;
+    
+    static{
+        configuration = Conf.getConfiguration();
+    }
     
     private static final Hashtable<String, Integer> teams = new Hashtable<>();
-    public static String aliasFile = "conf/teams.xml";
+    //public static String aliasFile = "conf/teams.xml";
+    
 
     
     /**
@@ -116,7 +123,7 @@ public class TeamAlias {
         TransformerFactory transformerFactory = TransformerFactory.newInstance();
         Transformer transformer = transformerFactory.newTransformer();
         DOMSource source = new DOMSource(doc);
-        StreamResult result = new StreamResult(new File(aliasFile));
+        StreamResult result = new StreamResult(new File(configuration.getAliasFile()));
         transformer.transform(source, result);
         
     }

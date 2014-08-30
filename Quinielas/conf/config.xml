@@ -12,6 +12,16 @@
 	<description>Path to the file which contains all teams of the
 	league with their references</description>
  </teamfile>
+ <matchsfile>
+ 	<path>/home/francisco/Dropbox/TFG/data/1-2div</path>
+ 	<description>Path to the file which contains matchs to load in the database with the format:
+ 		TEMPORADA DIVISION JORNADA			PARTIDO			
+ 		yyyy-yyyy	xª		x 		equipo local equipo visi x-x</description>
+ </matchsfile>
+ <predictionsfile>
+ 	<path>/home/francisco/Dropbox/TFG/data/predictions.arff</path>
+ 	<description>Path to the file with the result of the predictions</description>
+ </predictionsfile>
  <predictor>
 	<trainpath></trainpath>
 	<testpath></testpath>
@@ -19,5 +29,5 @@
 	<description>Path where to create the necessary files for train, test
 	and wherte to save the models</description>
  </predictor>
- <streak>4</streak>
+ <streak>5</streak>
 </config>

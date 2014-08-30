@@ -1,0 +1,30 @@
+@relation Quiniela
+@attribute team1-id numeric
+@attribute team2-id numeric
+@attribute percent-match-local-win numeric
+@attribute percent-match-local-defeat numeric
+@attribute percent-match-draw numeric
+@attribute percent-team1-win numeric
+@attribute percent-team2-win numeric
+@attribute percent-team1-seasonWins numeric
+@attribute percent-team1-seasonLocalWins numeric
+@attribute percent-team1-seasonLocalDraws numeric
+@attribute percent-team1-seasonLocalDefeats numeric
+@attribute team1-average numeric
+@attribute team1-local-average numeric
+@attribute team1-average-ppm numeric
+@attribute team1-streak numeric
+@attribute team1-players-value numeric
+@attribute team1-average-player-value numeric
+@attribute percent-team2-seasonWins numeric
+@attribute percent-team2-seasonVisitorWins numeric
+@attribute percent-team2-seasonVisitorDraws numeric
+@attribute percent-team2-seasonVisiorDefeats numeric
+@attribute team2-average numeric
+@attribute team2-local-average numeric
+@attribute team2-average-ppm numeric
+@attribute team2-streak numeric
+@attribute team2-players-value numeric
+@attribute team2-average-player-value numeric
+@attribute type {'v','e','d'}
+@data

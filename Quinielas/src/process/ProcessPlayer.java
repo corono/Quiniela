@@ -22,9 +22,6 @@ import static file.MatchsFile.*;
 public class ProcessPlayer {
     /**
      * extract the players from a season and evaluates their team influence
-     * @param team
-     * @param season
-     * @param conexion
      * @throws Exception 
      */
     public static void evaluationTeamPlayer() throws Exception{
@@ -71,7 +68,10 @@ public class ProcessPlayer {
             
         }
     }
-    
+    /**
+     * update historico_Jugador table with the teamIds
+     * @throws Exception 
+     */
     public static void idTeamHistorico() throws Exception{
         
         Connection conexion = getConexionBBDD();
