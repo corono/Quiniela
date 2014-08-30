@@ -19,32 +19,47 @@ public class Conf {
     
     
     private static Conf myInstance = null;
-    private XMLConfiguration xmlConf = null;
+    private XMLConfiguration config = null;
     
     private Conf() throws ConfigurationException {
-        xmlConf = new XMLConfiguration("conf/config.xml");
+        config = new XMLConfiguration("/home/francisco/Quiniela/Quinielas/conf/config.xml");
         
     }
     
     /**
      *
      * @return
-     * @throws ConfigurationException
      */
-    public static Conf getConfiguration() throws ConfigurationException {
-        if (myInstance == null){
-            myInstance = new Conf();
+    public static Conf getConfiguration() {
+        try{
+            if (myInstance == null){
+                myInstance = new Conf();
+            }
+            return myInstance;
+        }catch (ConfigurationException ex){
+             ex.printStackTrace();
+             return null;
         }
-        return myInstance;
     }
     
     public  String getAliasFile(){
-        return xmlConf.getString("teamfile.path");
+        return config.getString("teamfile.path");
     }
     
-    public  String getMysqlUrl() {
-       
-        return xmlConf.getString("MySqlUrl");
+    public  String getMysqlHost() {       
+        return config.getString("database.host");
+    }
+    public String getMysqlDatabase(){
+        return config.getString("database.databaseName");        
+    }
+    public String getMysqlUser(){
+        return config.getString("database.user");
+    }
+    public String getMysqlPass(){
+        return config.getString("database.pass");
+    }
+    public Integer getStreak(){
+        return config.getInteger("streak",5);
     }
     
 }

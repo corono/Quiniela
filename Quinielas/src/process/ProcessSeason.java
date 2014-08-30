@@ -6,6 +6,7 @@
 
 package process;
 
+import conf.Conf;
 import static database.BBDD.getConexionBBDD;
 import static database.BBDD.getSeasons;
 import java.io.FileWriter;
@@ -15,19 +16,26 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import static process.ProcessedFiles.arffHeader;
 
 /**
  *
  * @author francisco
  */
 public class ProcessSeason {
+    private static Conf configuration = null;
     /**
      * 
      * @param season
      * @param pw
+     * @param header
      * @throws Exception 
      */
-    public static void procesSeason(String season, PrintWriter pw) throws Exception{
+     static{
+         configuration = Conf.getConfiguration();
+    }
+    
+    public static void procesSeason(String season, PrintWriter pw, boolean header) throws Exception{
         
         Connection conexion = getConexionBBDD();
         
@@ -58,11 +66,15 @@ public class ProcessSeason {
         Statement st = conexion.createStatement();
         ResultSet result = st.executeQuery(query.toString());
         
+        if(header){
+            arffHeader(pw);
+        }
+        
         int[] vector = new int[6];
         Integer[] localData = new Integer[17];
         Integer[] visitData = new Integer[17];
         double[] entrada = new double[27], valPlayers = new double[2];
-        Integer local, visitante, streak = 5;
+        Integer local, visitante; //streak = 5;
         String  temp;
         
         while (result.next()){
@@ -139,7 +151,7 @@ public class ProcessSeason {
                 entrada[12] = 0.0;
             }            
             entrada[13] = localData[16] / localData[0]; //promedio puntos obtenidos por partido
-            entrada[14] = (double)streak(conexion, local,streak,result.getInt("Jornada"), result.getString("Temporada"));//factor racha
+            entrada[14] = (double)streak(conexion, local,configuration.getStreak(),result.getInt("Jornada"), result.getString("Temporada"));//factor racha
             valPlayers = addPlayersValue(conexion, local,result.getString("Temporada"));
             entrada[15] = valPlayers[0];//suma de la valoración de los jugadores
             entrada[16] = valPlayers[0]/valPlayers[1]; //promedio valoracion jugadores
@@ -160,7 +172,7 @@ public class ProcessSeason {
                 entrada[22] = 0.0;
             }
             entrada[23] = (double)visitData[16] / visitData[0]; //promedio puntos por partido
-            entrada[24] = (double)streak(conexion, visitante, streak, result.getInt("Jornada"), result.getString("Temporada"));
+            entrada[24] = (double)streak(conexion, visitante, configuration.getStreak(), result.getInt("Jornada"), result.getString("Temporada"));
             valPlayers = addPlayersValue(conexion, visitante ,result.getString("Temporada"));
             entrada[25] = valPlayers[0];//suma de la valoración de los jugadores
             entrada[26] = valPlayers[0]/valPlayers[1]; //promedio valoracion jugadores
@@ -376,29 +388,38 @@ public class ProcessSeason {
     public static void main(String[] args) throws Exception {
         
         ArrayList<String> seasons = getSeasons();
-        FileWriter fichero = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/train_borr.csv");
+        FileWriter fichero = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/train_borr.arff");
         PrintWriter pw = new PrintWriter(fichero);
         
-        //train
+        //train with las 15 seasons (1992-93/2007-08)
         for(int i = 20; i < seasons.size()-5; i++){
             //FileWriter fichero = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/train"+seasons.get(i)+".csv");
             //PrintWriter pw = new PrintWriter(fichero);
-            procesSeason(seasons.get(i), pw);
+            if(i == 20){
+                procesSeason(seasons.get(i), pw, true);
+            }else{
+                procesSeason(seasons.get(i), pw, false);
+            }
             //pw.flush();
             //pw.close();
         }
         pw.flush();
         pw.close();
         
-        System.exit(0);
-        
-        FileWriter ficheroTest = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/test_borr.csv");
+
+//        
+        FileWriter ficheroTest = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/test_borr.arff");
         PrintWriter pwtest = new PrintWriter(ficheroTest);
         //test
         for(int i = seasons.size()-5; i < seasons.size()-1; i++){
             //FileWriter ficheroTest = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/test"+seasons.get(i)+".csv");
             //PrintWriter pwtest = new PrintWriter(ficheroTest);
-            procesSeason(seasons.get(i), pwtest);
+            if(i == seasons.size()-5){
+                procesSeason(seasons.get(i), pwtest, true);
+            }else{
+                procesSeason(seasons.get(i), pwtest, false);
+            }
+            
             //pwtest.flush();
             //pwtest.close();
         }

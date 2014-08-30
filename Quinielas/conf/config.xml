@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="ISO-8859-1" ?>
-
+<config>
  <database>
-	<ip>127.0.0.1</ip>
+	<host>127.0.0.1</host>
 	<user>root</user>
 	<pass>b_a_sket88</pass>
+	<databaseName>LIGA</databaseName>
 	<description>Necessary info to connect with the database</description>
  </database>
-
  <teamfile>
-	<path></path>
+	<path>/home/francisco/Quiniela/Quinielas/conf/teams.xml</path>
 	<description>Path to the file which contains all teams of the
 	league with their references</description>
  </teamfile>
-
  <predictor>
 	<trainpath></trainpath>
 	<testpath></testpath>
@@ -20,3 +19,5 @@
 	<description>Path where to create the necessary files for train, test
 	and wherte to save the models</description>
  </predictor>
+ <streak>4</streak>
+</config>

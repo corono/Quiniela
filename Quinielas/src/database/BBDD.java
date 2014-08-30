@@ -40,11 +40,7 @@ public class BBDD {
     private static Conf configuration = null;
 
     static{
-        try {
-            configuration = Conf.getConfiguration();
-        } catch (ConfigurationException ex) {
-            System.out.println(ex.getMessage());
-        }
+        configuration = Conf.getConfiguration();
     }
     
      /**
@@ -54,7 +50,13 @@ public class BBDD {
       */
      public static Connection getConexionBBDD() throws Exception{
                     DriverManager.registerDriver(new org.gjt.mm.mysql.Driver());
-                    Connection conexion = DriverManager.getConnection(urlBBDD, user, pass);
+                    //Connection conexion = DriverManager.getConnection(urlBBDD, user, pass);
+                    
+                    String url = "jdbc:mysql://"+configuration.getMysqlHost()+":3306/"+configuration.getMysqlDatabase();
+                    System.out.println(url);
+                    Connection conexion = DriverManager.getConnection(url, configuration.getMysqlUser(), configuration.getMysqlPass());
+                    
+                    
                     return conexion;
 
           }     

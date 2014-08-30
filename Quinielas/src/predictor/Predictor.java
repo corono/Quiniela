@@ -24,16 +24,16 @@ import weka.core.converters.ConverterUtils.DataSource;
 public class Predictor {
    
     public static void main(String[] args) throws Exception{
-        
-        DataSource train = new DataSource("/home/francisco/Dropbox/TFG/data/wekafiles/train_2.csv");
-        DataSource test = new DataSource("/home/francisco/Dropbox/TFG/data/wekafiles/test_2.csv");
+        System.out.println("TestPredictor");
+        DataSource train = new DataSource("/home/francisco/Dropbox/TFG/data/wekafiles/train_borr.arff");
+        DataSource test = new DataSource("/home/francisco/Dropbox/TFG/data/wekafiles/test_borr.arff");
 
 
 
         Instances trainInstances = train.getDataSet();
         Instances testInstances = test.getDataSet();
 
-        //last three atributes out
+        //last attribute classify
         trainInstances.setClassIndex(trainInstances.numAttributes() - 1);
         testInstances.setClassIndex(testInstances.numAttributes() - 1);
 
