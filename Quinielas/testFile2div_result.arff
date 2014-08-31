@@ -1,0 +1,40 @@
+@relation Quiniela_predicted
+
+@attribute team1-id numeric
+@attribute team2-id numeric
+@attribute percent-match-local-win numeric
+@attribute percent-match-local-defeat numeric
+@attribute percent-match-draw numeric
+@attribute percent-team1-win numeric
+@attribute percent-team2-win numeric
+@attribute percent-team1-seasonWins numeric
+@attribute percent-team1-seasonLocalWins numeric
+@attribute percent-team1-seasonLocalDraws numeric
+@attribute percent-team1-seasonLocalDefeats numeric
+@attribute team1-average numeric
+@attribute team1-local-average numeric
+@attribute team1-average-ppm numeric
+@attribute team1-streak numeric
+@attribute team1-players-value numeric
+@attribute team1-average-player-value numeric
+@attribute percent-team2-seasonWins numeric
+@attribute percent-team2-seasonVisitorWins numeric
+@attribute percent-team2-seasonVisitorDraws numeric
+@attribute percent-team2-seasonVisiorDefeats numeric
+@attribute team2-average numeric
+@attribute team2-local-average numeric
+@attribute team2-average-ppm numeric
+@attribute team2-streak numeric
+@attribute team2-players-value numeric
+@attribute team2-average-player-value numeric
+@attribute 'prediction margin' numeric
+@attribute 'predicted type' {v,e,d}
+@attribute type {v,e,d}
+
+@data
+19,161,0.363636,0.363636,0.272727,0.363636,0.363636,0.357143,0.285714,0.428571,0.285714,0.073171,-0.058824,1,4,5941.063816,220.039401,0.357143,0.428571,0.285714,0.285714,-0.055556,-0.142857,1,3,4370.679496,99.333625,0.528528,e,e
+46,18,0.214286,0.142857,0.642857,0.142857,0.214286,0.428571,0.714286,0,0.285714,0.272727,0.384615,1,2,5391.947482,192.569553,0.214286,0.142857,0.142857,0.714286,-0.272727,-0.478261,0,-2,4761.599118,132.266642,-0.978978,v,d
+26,43,0.333333,0.166667,0.5,0.416667,0.083333,0.214286,0.428571,0.428571,0.142857,0.448276,0.555556,1,-2,5568.585237,198.878044,0.571429,0.714286,0.285714,0,0.277778,0.833333,2,1,5422.733355,164.325253,0.041388,e,e
+29,38,0.230769,0.192308,0.576923,0.192308,0.230769,0.214286,0.285714,0.428571,0.285714,0.181818,0,1,-2,5202.20287,153.005967,0.5,0.714286,0.285714,0,0.241379,0.466667,1,1,4827.438212,146.286006,0.276807,d,d
+76,78,0,0,0,0,0,0.285714,0.571429,0.142857,0.285714,0.3125,0.111111,1,-2,5495.125877,171.722684,0.642857,0.857143,0.142857,0,0.282051,0.636364,2,4,5873.091047,202.520381,0.933768,d,d
+42,107,0,0.25,0.75,0.25,0,0.714286,1,0,0,0.419355,0.636364,2,0,6091.640263,210.056561,0.571429,0.857143,0.142857,0,0.371429,0.6,1,1,5823.102106,200.796624,0.999071,v,v

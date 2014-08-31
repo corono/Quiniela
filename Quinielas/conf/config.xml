@@ -30,4 +30,8 @@
 	and wherte to save the models</description>
  </predictor>
  <streak>5</streak>
+ <workspace>
+ 	<path>/home/francisco/Dropbox/TFG/data/wekafiles/</path>
+ 	<description>Path to the folder where the application will create all intermediate files and save resutls</description>
+ </workspace>
 </config>

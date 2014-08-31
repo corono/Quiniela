@@ -66,5 +66,8 @@ public class Conf {
     public String getPredictionsFile(){
         return config.getString("predictionsfile.path");
     }
+    public String getWorkspace(){
+        return config.getString("workspace.path");
+    }
     
 }

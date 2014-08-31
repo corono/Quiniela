@@ -53,7 +53,7 @@ public class BBDD {
                     //Connection conexion = DriverManager.getConnection(urlBBDD, user, pass);
                     
                     String url = "jdbc:mysql://"+configuration.getMysqlHost()+":3306/"+configuration.getMysqlDatabase();
-                    System.out.println(url);
+                    //System.out.println(url);
                     Connection conexion = DriverManager.getConnection(url, configuration.getMysqlUser(), configuration.getMysqlPass());
                     
                     

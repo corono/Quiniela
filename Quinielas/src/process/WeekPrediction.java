@@ -16,13 +16,13 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import javax.xml.parsers.ParserConfigurationException;
-import org.apache.commons.configuration.ConfigurationException;
 import org.xml.sax.SAXException;
 import static process.ProcessSeason.addPlayersValue;
 import static process.ProcessSeason.getMatchesBetween;
@@ -51,48 +51,62 @@ public class WeekPrediction {
     public static void weekArffFile(ArrayList<String> matchs1, ArrayList<String> matchs2, String season, String jornada) throws ParserConfigurationException, SAXException, IOException, SQLException, Exception{
         
         double[] inputRow = new double[27];
+        Connection conexion = getConexionBBDD();
         
         PrintWriter pw = new PrintWriter (new File("testFile1div.arff"));
         arffHeader(pw);        
+        
         for(int i = 0; i < matchs1.size(); i++){
-            inputRow = getMatchsTeams(matchs1.get(i), season);
+            inputRow = getMatchsTeams(matchs1.get(i), season, conexion);
             for(int j = 0; j < inputRow.length; j++){
                 pw.print(inputRow[j]+",");
+            } 
+            if (i == (matchs1.size()-1)){
+                pw.print("v");
+            }else{
+                pw.print("v\n");
             }
-            pw.print("v\n");
         } 
         pw.close();
         
         PrintWriter pw2 = new PrintWriter (new File("testFile2div.arff"));
         arffHeader(pw2);
         for(int i = 0; i < matchs2.size(); i++){
-            inputRow = getMatchsTeams(matchs2.get(i), season);
+            inputRow = getMatchsTeams(matchs2.get(i), season, conexion);
             for(int j = 0; j < inputRow.length; j++){
-                pw.print(inputRow[j]+",");
+                pw2.print(inputRow[j]+",");
             }
-            pw.print("v\n");
+            if (i == (matchs2.size()-1)){
+                pw2.print("v");
+            }else{
+                pw2.print("v\n");
+            }
+            
         }
         pw2.close();
+        
+        conexion.close();
         
     }
     /**
      * Extract the teams in the match, and find their id
      * @param match localTeam-VisitorTeam
      * @param season
-     * @param jornada
+     * @param conexion
+     * @return 
      * @throws javax.xml.parsers.ParserConfigurationException
      * @throws org.xml.sax.SAXException
      * @throws java.sql.SQLException
      * @throws java.io.IOException
      */
-    public static double[] getMatchsTeams(String match, String season) throws ParserConfigurationException, SAXException, IOException, SQLException, Exception{
+    public static double[] getMatchsTeams(String match, String season, Connection conexion) throws ParserConfigurationException, SAXException, IOException, SQLException, Exception{
         
         String[] matchs = match.split("-");
         int team1 = getTeamID(matchs[0]);
         int team2 = getTeamID(matchs[1]);
-        System.out.println(matchs[0]+" "+team1+" "+team2+" "+matchs[1]);
+        //System.out.println(matchs[0]+" "+team1+" "+team2+" "+matchs[1]);
         //consulta para generar entrada NN
-        Connection conexion = getConexionBBDD();
+        
         
         int jornada = getJornada(season,team1,team2,conexion);
         
@@ -119,7 +133,7 @@ public class WeekPrediction {
             entrada[5] = 0.0;
             entrada[6] = 0.0;
         }
-        
+        //System.out.println(team1);
         aux = getTeamParams(seasonData);
         System.arraycopy(aux, 0, entrada, 7, aux.length);
         
@@ -130,6 +144,7 @@ public class WeekPrediction {
         entrada[16] = valPlayers[0]/valPlayers[1]; //promedio valoracion jugadores
         
         seasonData = getSeasonPerformance(team2, season,jornada, conexion);
+        //System.out.println(team2);
         aux = getTeamParams(seasonData);
         System.arraycopy(aux, 0, entrada, 17, aux.length);
         entrada[24] = (double)streak(conexion, team2, configuration.getStreak(),jornada, season);//factor racha
@@ -153,17 +168,25 @@ public class WeekPrediction {
     public static int getJornada(String season, int local, int visitante, Connection conexion) throws SQLException{
         
         StringBuilder sb = new StringBuilder();
-        sb.append("SELECT * FROM LIGA.Partidos where Temporada = '");
+        sb.append("SELECT Jornada FROM LIGA.Partidos WHERE Temporada = '");
         sb.append(season);
         sb.append("' AND Local = ");
         sb.append(local);
         sb.append(" AND Visitante = ");
         sb.append(visitante);
-        System.out.println(sb.toString());
+        
+        int jornada = 0;
+        //System.out.println(sb.toString());
         Statement st = conexion.createStatement();
         ResultSet result = st.executeQuery(sb.toString());
-        System.out.println(result.getInt("Jornada"));
-        return result.getInt("Jornada");
+        
+        while (result.next()){          
+            jornada = Integer.valueOf(result.getString("Jornada"));
+        //System.out.println(result.getString("Jornada"));
+        }
+        st.close();
+        
+        return jornada;
     }
     /**
      * 
@@ -208,8 +231,8 @@ public class WeekPrediction {
             teamData[16] = result.getInt("Puntos");
         }
        
-            System.out.println(sb.toString()+"kaka "+teamData[0]);
-       
+            
+       st.close();
         
         return teamData;
         
@@ -251,13 +274,14 @@ public class WeekPrediction {
         
     }
     
-    public static void main(String[] args) throws FileNotFoundException, IOException, ParserConfigurationException, SAXException, SQLException, Exception {
+    public static void weekPrediction(String inputFile) throws FileNotFoundException, IOException{
+        
         String line, season = null, jornada = null;
         ArrayList<String> matchs1 = new ArrayList<>();
         ArrayList<String> matchs2 = new ArrayList<>();
         Boolean primera = false, segunda = false;
         
-        FileReader fr = new FileReader(new File("/home/francisco/Dropbox/TFG/data/jornadas/jornada.txt"));
+        FileReader fr = new FileReader(new File(inputFile));
         BufferedReader br = new BufferedReader(fr);
         
         while ((line = br.readLine()) != null ){
@@ -286,10 +310,27 @@ public class WeekPrediction {
                 
         }
         br.close();
+        try {
+            weekArffFile(matchs1,matchs2, season, jornada);
+        } catch (SAXException ex) {
+            ex.printStackTrace();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
         
-        weekArffFile(matchs1,matchs2, season, jornada);
         
-        
+    }
+    
+    public static void main(String[] args) {
+        try {
+            String file = "/home/francisco/Dropbox/TFG/data/jornadas/jornada17.txt";
+            
+            weekPrediction(file);
+        } catch (IOException ex) {
+            ex.printStackTrace();
+        }
         
         
     }

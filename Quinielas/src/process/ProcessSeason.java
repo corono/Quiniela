@@ -31,40 +31,16 @@ public class ProcessSeason {
      * @param header
      * @throws Exception 
      */
-     static{
-         configuration = Conf.getConfiguration();
+      static{
+        configuration = Conf.getConfiguration();
     }
     
-    public static void procesSeason(String season, PrintWriter pw, boolean header) throws Exception{
+    public static void procesSeason(String season, PrintWriter pw, boolean header, String query) throws Exception{
         
         Connection conexion = getConexionBBDD();
         
-        StringBuilder query = new StringBuilder();
-        query.append("Select p.Local as Local, p.Visitante as Visitante, p.Jornada as Jornada, ");
-        query.append("p.Temporada as Temporada, c.PJ as LocalPJ, c.PG as LocalPG, c.PE as LocalPE, ");
-        query.append("p.VictoriaLocal as VL, p.Empate as E, p.VictoriaVisitante as VV, ");
-        query.append("c.PP as LocalPP, c.PGL as LocalPGL , c.PEL as LocalPEL, c.PPL as LocalPPL, ");
-        query.append("c.PGV as LocalPGV, c.PEV as LocalPEV, c.PPV as LocalPPV, c.GF as LocalGF, ");
-        query.append("c.GC as LocalGC, c.GFL as LocalGFL, c.GCL as LocalGCL, c.GFV as LocalGFV, ");
-        query.append("c.GCV as LocalGCV, c.Puntos as LocalPuntos, c2.PJ as VisitantePJ, ");
-        query.append("c2.PG as VisitantePG, c2.PE as VisitantePE, c2.PP as VisitantePP, ");
-        query.append("c2.PGL as VisitantePGL , c2.PEL as VisitantePEL, c2.PPL as VisitantePPL, ");
-        query.append("c2.PGV as VisitantePGV, c2.PEV as VisitantePEV, c2.PPV as VisitantePPV, ");
-        query.append("c2.GF as VisitanteGF, c2.GC as VisitanteGC, c2.GFL as VisitanteGFL, ");
-        query.append("c2.GCL as VisitanteGCL, c2.GFV as VisitanteGFV, c2.GCV as VisitanteGCV, ");
-        query.append("c2.Puntos as VisitantePuntos ");
-        query.append("FROM Partidos p ");
-        query.append("JOIN Clasificacion c ");
-        query.append("ON p.Local = c.Equipos_idEquipos AND p.Temporada = c.Temporada AND p.Jornada = c.Jornada ");
-        query.append("AND p.Division = c.Division ");
-        query.append("JOIN Clasificacion c2 ");
-        query.append("ON p.Visitante = c2.Equipos_idEquipos AND p.Temporada = c2.Temporada AND p.Jornada = c2.Jornada ");
-        query.append("AND p.Division = c2.Division WHERE p.Temporada = \"");
-        query.append(season);
-        query.append("\" ;");
-        
         Statement st = conexion.createStatement();
-        ResultSet result = st.executeQuery(query.toString());
+        ResultSet result = st.executeQuery(query);
         
         if(header){
             arffHeader(pw);
@@ -118,7 +94,7 @@ public class ProcessSeason {
             visitData[15] = result.getInt("VisitanteGCV");
             visitData[16] = result.getInt("VisitantePuntos");
           
-            System.out.println(result.getString("Temporada")+" "+result.getInt("Jornada")+" "+ local+" "+visitante);
+          //  System.out.println(result.getString("Temporada")+" "+result.getInt("Jornada")+" "+ local+" "+visitante);
             vector = getMatchesBetween(local, visitante, temp, conexion);
             
             entrada[0] = (double)local;
@@ -355,7 +331,7 @@ public class ProcessSeason {
                 racha = vector.get(0)-vector.get(1);
             }
             rs.close();
-          System.out.println(racha);
+          //System.out.println(racha);
             return racha;
     }
     /**
@@ -384,21 +360,30 @@ public class ProcessSeason {
             
             return vector;
     }
-    
-    public static void main(String[] args) throws Exception {
+    /**
+     * Generates train and test set for a common (1 and 2 div) Neural Network
+     * @throws Exception 
+     */
+    public static void commonNetwork() throws Exception{
         
         ArrayList<String> seasons = getSeasons();
-        FileWriter fichero = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/train_borr.arff");
+        FileWriter fichero = new FileWriter(configuration.getWorkspace()+"train_common.arff");
         PrintWriter pw = new PrintWriter(fichero);
         
-        //train with las 15 seasons (1992-93/2007-08)
-        for(int i = 20; i < seasons.size()-5; i++){
+        String query;
+        
+        
+        
+        //train 
+        for(int i = 20; i < seasons.size()-3; i++){
             //FileWriter fichero = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/train"+seasons.get(i)+".csv");
             //PrintWriter pw = new PrintWriter(fichero);
+            query = appendQuery(seasons.get(i),true,null);
+            
             if(i == 20){
-                procesSeason(seasons.get(i), pw, true);
+                procesSeason(seasons.get(i), pw, true, query);
             }else{
-                procesSeason(seasons.get(i), pw, false);
+                procesSeason(seasons.get(i), pw, false,query);
             }
             //pw.flush();
             //pw.close();
@@ -408,16 +393,17 @@ public class ProcessSeason {
         
 
 //        
-        FileWriter ficheroTest = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/test_borr.arff");
+        FileWriter ficheroTest = new FileWriter(configuration.getWorkspace()+"test_common.arff");
         PrintWriter pwtest = new PrintWriter(ficheroTest);
         //test
-        for(int i = seasons.size()-5; i < seasons.size()-1; i++){
+        for(int i = seasons.size()-3; i < seasons.size()-1; i++){
             //FileWriter ficheroTest = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/test"+seasons.get(i)+".csv");
             //PrintWriter pwtest = new PrintWriter(ficheroTest);
-            if(i == seasons.size()-5){
-                procesSeason(seasons.get(i), pwtest, true);
+            query = appendQuery(seasons.get(i),true,null);
+            if(i == seasons.size()-3){
+                procesSeason(seasons.get(i), pwtest, true, query);
             }else{
-                procesSeason(seasons.get(i), pwtest, false);
+                procesSeason(seasons.get(i), pwtest, false, query);
             }
             
             //pwtest.flush();
@@ -428,5 +414,170 @@ public class ProcessSeason {
         
         
     }
+    
+    /**
+     * Generates train and test set for the first division Neural Network
+     * @throws Exception 
+     */
+    public static void firstDivisionNetwork() throws Exception{
+        
+        ArrayList<String> seasons = getSeasons();
+        FileWriter fichero = new FileWriter(configuration.getWorkspace()+"train_common.arff");
+        PrintWriter pw = new PrintWriter(fichero);
+        
+        String query;
+        
+        
+        
+        //train 
+        for(int i = 20; i < seasons.size()-3; i++){
+            //FileWriter fichero = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/train"+seasons.get(i)+".csv");
+            //PrintWriter pw = new PrintWriter(fichero);
+            query = appendQuery(seasons.get(i),false,"1ª");
+            System.out.println(query);
+            
+            if(i == 20){
+                procesSeason(seasons.get(i), pw, true, query);
+            }else{
+                procesSeason(seasons.get(i), pw, false,query);
+            }
+            //pw.flush();
+            //pw.close();
+        }
+        pw.flush();
+        pw.close();
+        
+
+//        
+        FileWriter ficheroTest = new FileWriter(configuration.getWorkspace()+"test_common.arff");
+        PrintWriter pwtest = new PrintWriter(ficheroTest);
+        //test
+        for(int i = seasons.size()-3; i < seasons.size()-1; i++){
+            //FileWriter ficheroTest = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/test"+seasons.get(i)+".csv");
+            //PrintWriter pwtest = new PrintWriter(ficheroTest);
+            query = appendQuery(seasons.get(i),false,"1ª");
+            System.out.println(query);
+            if(i == seasons.size()-3){
+                procesSeason(seasons.get(i), pwtest, true, query);
+            }else{
+                procesSeason(seasons.get(i), pwtest, false, query);
+            }
+            
+            //pwtest.flush();
+            //pwtest.close();
+        }
+        pwtest.flush();
+        pwtest.close();
+        
+        
+    }
+    /**
+     * Generates train and test set for the second division Neural Network
+     * @throws Exception 
+     */
+    public static void secondDivisionNetwork() throws Exception{
+        
+        ArrayList<String> seasons = getSeasons();
+        FileWriter fichero = new FileWriter(configuration.getWorkspace()+"train_common.arff");
+        PrintWriter pw = new PrintWriter(fichero);
+        
+        String query;
+        
+        
+        
+        //train 
+        for(int i = 20; i < seasons.size()-3; i++){
+            //FileWriter fichero = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/train"+seasons.get(i)+".csv");
+            //PrintWriter pw = new PrintWriter(fichero);
+            query = appendQuery(seasons.get(i),false,"2ª");
+            System.out.println(query);
+            if(i == 20){
+                procesSeason(seasons.get(i), pw, true, query);
+            }else{
+                procesSeason(seasons.get(i), pw, false,query);
+            }
+            //pw.flush();
+            //pw.close();
+        }
+        pw.flush();
+        pw.close();
+        
+
+//        
+        FileWriter ficheroTest = new FileWriter(configuration.getWorkspace()+"test_common.arff");
+        PrintWriter pwtest = new PrintWriter(ficheroTest);
+        //test
+        for(int i = seasons.size()-3; i < seasons.size()-1; i++){
+            //FileWriter ficheroTest = new FileWriter("/home/francisco/Dropbox/TFG/data/wekafiles/test"+seasons.get(i)+".csv");
+            //PrintWriter pwtest = new PrintWriter(ficheroTest);
+            query = appendQuery(seasons.get(i),false,"2ª");
+            System.out.println(query);
+            if(i == seasons.size()-3){
+                procesSeason(seasons.get(i), pwtest, true, query);
+            }else{
+                procesSeason(seasons.get(i), pwtest, false, query);
+            }
+            
+            //pwtest.flush();
+            //pwtest.close();
+        }
+        pwtest.flush();
+        pwtest.close();
+        
+        
+    }
+    /**
+     * build the necessary query to build the train file
+     * @param season
+     * @param common
+     * @param division
+     * @return 
+     */
+    public static String appendQuery(String season, Boolean common, String division){
+         
+        
+        StringBuilder query = new StringBuilder();
+        query.append("Select p.Local as Local, p.Visitante as Visitante, p.Jornada as Jornada, ");
+        query.append("p.Temporada as Temporada, c.PJ as LocalPJ, c.PG as LocalPG, c.PE as LocalPE, ");
+        query.append("p.VictoriaLocal as VL, p.Empate as E, p.VictoriaVisitante as VV, ");
+        query.append("c.PP as LocalPP, c.PGL as LocalPGL , c.PEL as LocalPEL, c.PPL as LocalPPL, ");
+        query.append("c.PGV as LocalPGV, c.PEV as LocalPEV, c.PPV as LocalPPV, c.GF as LocalGF, ");
+        query.append("c.GC as LocalGC, c.GFL as LocalGFL, c.GCL as LocalGCL, c.GFV as LocalGFV, ");
+        query.append("c.GCV as LocalGCV, c.Puntos as LocalPuntos, c2.PJ as VisitantePJ, ");
+        query.append("c2.PG as VisitantePG, c2.PE as VisitantePE, c2.PP as VisitantePP, ");
+        query.append("c2.PGL as VisitantePGL , c2.PEL as VisitantePEL, c2.PPL as VisitantePPL, ");
+        query.append("c2.PGV as VisitantePGV, c2.PEV as VisitantePEV, c2.PPV as VisitantePPV, ");
+        query.append("c2.GF as VisitanteGF, c2.GC as VisitanteGC, c2.GFL as VisitanteGFL, ");
+        query.append("c2.GCL as VisitanteGCL, c2.GFV as VisitanteGFV, c2.GCV as VisitanteGCV, ");
+        query.append("c2.Puntos as VisitantePuntos ");
+        query.append("FROM Partidos p ");
+        query.append("JOIN Clasificacion c ");
+        query.append("ON p.Local = c.Equipos_idEquipos AND p.Temporada = c.Temporada AND p.Jornada = c.Jornada ");
+        query.append("AND p.Division = c.Division ");
+        query.append("JOIN Clasificacion c2 ");
+        query.append("ON p.Visitante = c2.Equipos_idEquipos AND p.Temporada = c2.Temporada AND p.Jornada = c2.Jornada ");
+        query.append("AND p.Division = c2.Division WHERE p.Temporada = \"");
+        query.append(season);
+        query.append("\"");
+        
+        if(!common){
+            query.append(" WHERE p.Division = '");
+            query.append(division);
+            query.append("'");
+        }
+        
+        query.append(" ;");
+        return query.toString();
+    }
+ 
+        
+   
+    
+    public static void main(String[] args) throws Exception {
+        System.out.println("test processSeasson");
+        commonNetwork();
+        
+      }   
+       
     
 }

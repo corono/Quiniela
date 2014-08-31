@@ -84,7 +84,7 @@ public class ProcessPlayer {
             try{
                 Statement st2 = conexion.createStatement();
                 String query2 = "UPDATE LIGA.Historico_Jugador SET idEquipo = " + getTeamID(result.getString("Equipo")) + " WHERE Jugadores_idJugadores = '" + result.getString("Jugadores_idJugadores") + "' AND Temporada = '" + result.getString("Temporada") +"'";
-                System.out.println(query2 + " "+ result.getString("Equipo"));
+                //System.out.println(query2 + " "+ result.getString("Equipo"));
                 st2.executeUpdate(query2);
             }
             catch (SQLException e){
