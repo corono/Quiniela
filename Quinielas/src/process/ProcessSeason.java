@@ -422,7 +422,7 @@ public class ProcessSeason {
     public static void firstDivisionNetwork() throws Exception{
         
         ArrayList<String> seasons = getSeasons();
-        FileWriter fichero = new FileWriter(configuration.getWorkspace()+"train_common.arff");
+        FileWriter fichero = new FileWriter(configuration.getWorkspace()+"train_div1.arff");
         PrintWriter pw = new PrintWriter(fichero);
         
         String query;
@@ -449,7 +449,7 @@ public class ProcessSeason {
         
 
 //        
-        FileWriter ficheroTest = new FileWriter(configuration.getWorkspace()+"test_common.arff");
+        FileWriter ficheroTest = new FileWriter(configuration.getWorkspace()+"test_div1.arff");
         PrintWriter pwtest = new PrintWriter(ficheroTest);
         //test
         for(int i = seasons.size()-3; i < seasons.size()-1; i++){
@@ -478,7 +478,7 @@ public class ProcessSeason {
     public static void secondDivisionNetwork() throws Exception{
         
         ArrayList<String> seasons = getSeasons();
-        FileWriter fichero = new FileWriter(configuration.getWorkspace()+"train_common.arff");
+        FileWriter fichero = new FileWriter(configuration.getWorkspace()+"tarin_div2.arff");
         PrintWriter pw = new PrintWriter(fichero);
         
         String query;
@@ -504,7 +504,7 @@ public class ProcessSeason {
         
 
 //        
-        FileWriter ficheroTest = new FileWriter(configuration.getWorkspace()+"test_common.arff");
+        FileWriter ficheroTest = new FileWriter(configuration.getWorkspace()+"test_div2.arff");
         PrintWriter pwtest = new PrintWriter(ficheroTest);
         //test
         for(int i = seasons.size()-3; i < seasons.size()-1; i++){
@@ -561,12 +561,13 @@ public class ProcessSeason {
         query.append("\"");
         
         if(!common){
-            query.append(" WHERE p.Division = '");
+            query.append(" AND p.Division = '");
             query.append(division);
             query.append("'");
         }
         
         query.append(" ;");
+        
         return query.toString();
     }
  
@@ -575,8 +576,8 @@ public class ProcessSeason {
     
     public static void main(String[] args) throws Exception {
         System.out.println("test processSeasson");
-        commonNetwork();
-        
+        //commonNetwork();
+        secondDivisionNetwork();
       }   
        
     

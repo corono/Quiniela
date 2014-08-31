@@ -36,25 +36,36 @@ public class Predictor {
         //last attribute classify
         trainInstances.setClassIndex(trainInstances.numAttributes() - 1);
         testInstances.setClassIndex(testInstances.numAttributes() - 1);
+//        
+//        Classifier cModel = (Classifier)new MultilayerPerceptron();  
+//        cModel.buildClassifier(trainInstances);  
+//
+//        weka.core.SerializationHelper.write("/some/where/nBayes.model", cModel);
+//
+//        Classifier cls = (Classifier) weka.core.SerializationHelper.read("/some/where/nBayes.model");
+//
+//        // Test the model
+//        Evaluation eTest = new Evaluation(trainInstances);
+//        eTest.evaluateModel(cls, testInstances);
 
 
 
         MultilayerPerceptron mlp = new MultilayerPerceptron();
         mlp.buildClassifier(trainInstances);
         mlp.setHiddenLayers("a");
-        mlp.setLearningRate(0.3);       
+        mlp.setLearningRate(0.3);    
+        mlp.setTrainingTime(500);
+        mlp.setMomentum(0.2);
 
         // train classifier
         Classifier cls = new MultilayerPerceptron();  
-        cls.buildClassifier(trainInstances);
-        
-
-
+        cls.buildClassifier(trainInstances);   
+       
 
         // evaluate classifier and print some statistics
         Evaluation eval = new Evaluation(trainInstances);
         eval.evaluateModel(cls, testInstances);        
-
+        
         System.out.println(eval.toSummaryString());
 
     }
