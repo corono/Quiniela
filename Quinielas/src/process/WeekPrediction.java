@@ -53,10 +53,11 @@ public class WeekPrediction {
         double[] inputRow = new double[27];
         Connection conexion = getConexionBBDD();
         
-        PrintWriter pw = new PrintWriter (new File("testFile1div.arff"));
+        PrintWriter pw = new PrintWriter (new File("/home/francisco/Dropbox/TFG/data/jornadas/testFile1div.arff"));
         arffHeader(pw);        
         
         for(int i = 0; i < matchs1.size(); i++){
+            System.out.println(matchs1.get(i));
             inputRow = getMatchsTeams(matchs1.get(i), season, conexion);
             for(int j = 0; j < inputRow.length; j++){
                 pw.print(inputRow[j]+",");
@@ -69,9 +70,10 @@ public class WeekPrediction {
         } 
         pw.close();
         
-        PrintWriter pw2 = new PrintWriter (new File("testFile2div.arff"));
+        PrintWriter pw2 = new PrintWriter (new File("/home/francisco/Dropbox/TFG/data/jornadas/testFile2div.arff"));
         arffHeader(pw2);
         for(int i = 0; i < matchs2.size(); i++){
+            System.out.println(matchs2.get(i));
             inputRow = getMatchsTeams(matchs2.get(i), season, conexion);
             for(int j = 0; j < inputRow.length; j++){
                 pw2.print(inputRow[j]+",");
@@ -133,7 +135,7 @@ public class WeekPrediction {
             entrada[5] = 0.0;
             entrada[6] = 0.0;
         }
-        //System.out.println(team1);
+        System.out.println(team1);
         aux = getTeamParams(seasonData);
         System.arraycopy(aux, 0, entrada, 7, aux.length);
         
@@ -144,7 +146,7 @@ public class WeekPrediction {
         entrada[16] = valPlayers[0]/valPlayers[1]; //promedio valoracion jugadores
         
         seasonData = getSeasonPerformance(team2, season,jornada, conexion);
-        //System.out.println(team2);
+        System.out.println(team2);
         aux = getTeamParams(seasonData);
         System.arraycopy(aux, 0, entrada, 17, aux.length);
         entrada[24] = (double)streak(conexion, team2, configuration.getStreak(),jornada, season);//factor racha
@@ -176,13 +178,15 @@ public class WeekPrediction {
         sb.append(visitante);
         
         int jornada = 0;
-        //System.out.println(sb.toString());
+        System.out.println(sb.toString());
         Statement st = conexion.createStatement();
         ResultSet result = st.executeQuery(sb.toString());
         
-        while (result.next()){          
-            jornada = Integer.valueOf(result.getString("Jornada"));
-        //System.out.println(result.getString("Jornada"));
+        while (result.next()){       
+            if(!result.getString("Jornada").equals("1ª/2ª")){
+                jornada = Integer.valueOf(result.getString("Jornada"));
+                System.out.println(result.getString("Jornada"));
+            }
         }
         st.close();
         
@@ -208,6 +212,8 @@ public class WeekPrediction {
         sb.append(team);
         
         int[] teamData = new int[17];
+        
+        System.out.println(sb.toString());
         
         Statement st = conexion.createStatement();
         ResultSet result = st.executeQuery(sb.toString());
@@ -273,7 +279,14 @@ public class WeekPrediction {
         return entrada;
         
     }
-    
+    /**
+     * read txt file with the matchs of the weekend, and create two arff files
+     * one with the input for the 1 division neural network
+     * and other with the input for the 2 division neural network
+     * @param inputFile
+     * @throws FileNotFoundException
+     * @throws IOException 
+     */
     public static void weekPrediction(String inputFile) throws FileNotFoundException, IOException{
         
         String line, season = null, jornada = null;
@@ -325,7 +338,7 @@ public class WeekPrediction {
     
     public static void main(String[] args) {
         try {
-            String file = "/home/francisco/Dropbox/TFG/data/jornadas/jornada17.txt";
+            String file = "/home/francisco/Dropbox/TFG/data/jornadas/jornada10.txt";
             
             weekPrediction(file);
         } catch (IOException ex) {

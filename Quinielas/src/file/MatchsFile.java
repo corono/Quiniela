@@ -144,8 +144,8 @@ public class MatchsFile {
                         Element eElement = (Element) nNode;
                         id = Integer.parseInt(eElement.getElementsByTagName("id").item(0).getTextContent());
                         name = eElement.getElementsByTagName("name").item(0).getTextContent();
-                        //calculate levenshteind distance
-                        distance = computeLevenshteinDistance(team.toLowerCase(),name);
+                        //calculate levenshtein distance
+                        distance = computeLevenshteinDistance(team.toLowerCase(),name.toLowerCase());
                         //check if the distanc is lower than the previous                       
                         if(!dLevenshtein.containsKey(id)){
                             dLevenshtein.put(id,distance);
@@ -156,7 +156,7 @@ public class MatchsFile {
                             }
                         }
 
-                        if (team.toLowerCase().equals(name)){
+                        if (team.toLowerCase().equals(name.toLowerCase())){
                             found = Boolean.TRUE; 
                         }
                 }

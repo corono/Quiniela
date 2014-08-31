@@ -23,9 +23,13 @@
  	<description>Path to the file with the result of the predictions</description>
  </predictionsfile>
  <predictor>
-	<trainpath></trainpath>
-	<testpath></testpath>
+	<trainfile></trainfile>
+	<testfile></testfile>
 	<modelpath></modelpath>
+	<hiddenlayers>a</hiddenlayers>
+	<learningrate>0.3</learningrate>
+	<epocs>300</epocs>
+	<momentum>0.2</momentum>
 	<description>Path where to create the necessary files for train, test
 	and wherte to save the models</description>
  </predictor>

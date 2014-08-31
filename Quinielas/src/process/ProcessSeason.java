@@ -33,7 +33,7 @@ public class ProcessSeason {
      */
       static{
         configuration = Conf.getConfiguration();
-    }
+        }
     
     public static void procesSeason(String season, PrintWriter pw, boolean header, String query) throws Exception{
         
@@ -502,6 +502,7 @@ public class ProcessSeason {
         pw.flush();
         pw.close();
         
+        System.out.println("Test");
 
 //        
         FileWriter ficheroTest = new FileWriter(configuration.getWorkspace()+"test_div2.arff");
@@ -577,7 +578,8 @@ public class ProcessSeason {
     public static void main(String[] args) throws Exception {
         System.out.println("test processSeasson");
         //commonNetwork();
-        secondDivisionNetwork();
+        //secondDivisionNetwork();
+        firstDivisionNetwork();
       }   
        
     

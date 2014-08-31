@@ -22,7 +22,7 @@ public class Conf {
     private XMLConfiguration config = null;
     
     private Conf() throws ConfigurationException {
-        config = new XMLConfiguration("/home/francisco/Quiniela/Quinielas/conf/config.xml");
+        config = new XMLConfiguration("conf/config.xml");
         
     }
     
@@ -69,5 +69,18 @@ public class Conf {
     public String getWorkspace(){
         return config.getString("workspace.path");
     }
+    public String getHiddenLayers(){
+        return config.getString("predictor.hiddenlayers");
+    }
+    public Double getLearningRate() {
+        return config.getDouble("predictor.learningrate");
+    }
+    public Integer getEpocs(){
+        return config.getInteger("predictor.epocs", 500);
+    }
+    public Double getMomentum(){
+        return config.getDouble("predictor.momentum", 0.2);
+    }
+    
     
 }
